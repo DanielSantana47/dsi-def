@@ -14,24 +14,15 @@ import { ListCard } from "../components/wish-list/card";
 import { Header } from "../components/wish-list/header";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { auth } from "../firebaseConfig";
-import axios from "axios";
+import { fetchCities } from "../services/api";
 import {
     fetchWishlist,
     formattedDate,
     handleAdd,
-    handleDateChange,
     handleDelete,
     handleEdit,
-    toggleDatePicker
 } from "../services/wish-list";
-import { CardType } from "../types/card";
 import { ErrorText } from "../components/login/error-text";
-
-interface WishListItem {
-    id: string;
-    wish: string;
-    date: string;
-}
 
 interface WishListState {
     wish: string;
@@ -68,7 +59,7 @@ class WishList extends Component<{}, WishListState> {
         if (userEmail) {
             fetchWishlist({ userEmail, setList: this.setList });
         }
-        await this.fetchCities();
+        await fetchCities({ setAvailableCities: this.setAvailableCities, setIsLoading: this.setIsLoading });
     }
 
     setList = (list: WishListItem[]) => {
@@ -83,15 +74,12 @@ class WishList extends Component<{}, WishListState> {
         this.setState({ editingId });
     };
 
-    fetchCities = async () => {
-        try {
-            const response = await axios.get("https://dsi-api-2-danielsantana47s-projects.vercel.app/api/cities");
-            const cityNames = response.data.map((city: CardType) => city.cityPt.toLowerCase());
-            this.setState({ availableCities: cityNames, isLoading: false });
-        } catch (error) {
-            console.error("Erro ao buscar cidades:", error);
-            this.setState({ isLoading: false });
-        }
+    setAvailableCities = (cities: string[]) => {
+        this.setState({ availableCities: cities });
+    };
+
+    setIsLoading = (isLoading: boolean) => {
+        this.setState({ isLoading });
     };
 
     isCityValid = () => {
